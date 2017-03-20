@@ -196,16 +196,12 @@ class SearchAWSResources(object):
                 fields.append((field_name, field_printable_name))
         return fields
 
-    def _print_long_format(self):
-        """Print ec2info in long format.
+    def _print_long_format(self, verbose):
+        """Print instances in long format.
 
-        Print the information contained in ec2info with each attribute on its own
-        line. Each record set is separated by a marker.
+        To be implemented
         """
-        for instance in self.ec2data:
-            for key in self.ec2_fields:
-                print("{0}: {1}".format(key, instance[key]))
-            print("------")
+        raise NotImplementedError('This method has not been implemented.')
 
     def _print_table_format(self, verbose):
         """Print ec2info in a table.
@@ -457,10 +453,6 @@ def parse_commandline_args():
     parser.add_argument('-a', '--account',
                         dest='aws_account',
                         default='all')
-    parser.add_argument('-f', '--format',
-                        dest='print_format',
-                        default='table',
-                        choices=('table', 'long'))
     parser.add_argument('-v', '--verbose',
                         action='store_true',)
 
@@ -532,7 +524,6 @@ def main():
 
     instances.filter(search_filter)
     instances.print_instances(
-        print_format=args.print_format,
         verbose=args.verbose,
         )
 
