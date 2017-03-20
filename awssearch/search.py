@@ -495,8 +495,7 @@ def main():
     if args.aws_account == 'all':
         aws_accounts = AWS_ACCOUNTS
     else:
-        aws_accounts = []
-        aws_accounts.append(args.aws_account)
+        aws_accounts = [args.aws_account]
 
     search_filter = {}
 
