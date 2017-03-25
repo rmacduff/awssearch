@@ -1,15 +1,11 @@
-"""
-A tool for retrieving basic information from the running EC2 instances.
+"""Classes that repressent groups of AWS instances.
 """
 
 from __future__ import print_function
 import abc
-import argparse
-import os
 
 from terminaltables import AsciiTable
 import boto3
-import yaml
 
 from resources import Ec2Instance, ElbInstance
 
@@ -331,104 +327,3 @@ class SearchElbInstances(SearchAWSResources):
             printable_data = field_data
 
         return printable_data
-
-def parse_commandline_args():
-    """Parse commandline arguments.
-    """
-
-    # Top-level options
-    parser = argparse.ArgumentParser(description='Query EC2 instances')
-    parser.add_argument('-a', '--account',
-                        dest='aws_account',
-                        default='all')
-    parser.add_argument('-r', '--region',
-                        dest='aws_regions',
-                        default='all')
-    parser.add_argument('-v', '--verbose',
-                        action='store_true',)
-
-    subparsers = parser.add_subparsers(help='AWS resource to search for', dest='resource')
-
-    # ec2 sub-command
-    parser_ec2 = subparsers.add_parser('ec2', help='search for ec2 instances')
-    parser_ec2.add_argument('-i', '--instance-id',
-                            dest='instance_id')
-    parser_ec2.add_argument('--ip',
-                            dest='instance_ip')
-    parser_ec2.add_argument('-n', '--name',
-                            dest='instance_name',)
-    parser_ec2.add_argument('-s', '--state',
-                            dest='instance_state',
-                            default='running',
-                            choices=('running', 'stopped', 'terminated'))
-    parser_ec2.add_argument('-t', '--tags',
-                            #action='append',
-                            dest='instance_tags')
-
-    # elb sub-command
-    parser_ec2 = subparsers.add_parser('elb', help='search for elb instances')
-    parser_ec2.add_argument('--dns',
-                            dest='instance_dns_name')
-    parser_ec2.add_argument('-n', '--name',
-                            dest='instance_name',)
-
-    return parser.parse_args()
-
-def parse_config():
-    """Return a dict representing the configuration
-
-    """
-    with open(os.path.expanduser('~/.aws-search.yml')) as config_fh:
-        return yaml.load(config_fh)
-
-
-def main():
-    """Main point of entry.
-    """
-
-    conf = parse_config()
-    args = parse_commandline_args()
-
-    if args.aws_account == 'all':
-        aws_accounts = conf['aws_accounts']
-    else:
-        aws_accounts = [args.aws_account]
-
-    if args.aws_regions == 'all':
-        aws_regions = conf['aws_regions']
-    else:
-        aws_regions = [args.aws_regions]
-
-    search_filter = {}
-
-    if args.resource == 'ec2':
-        instances = SearchEc2Instances(aws_accounts, aws_regions)
-
-        if args.instance_name:
-            search_filter.update({'instance_name': args.instance_name})
-        if args.instance_id:
-            search_filter.update({'instance_id': args.instance_id})
-        if args.instance_tags:
-            search_filter.update({'instance_tags': args.instance_tags})
-        if args.instance_ip:
-            search_filter.update({'instance_ip': args.instance_ip})
-        # State defaults to 'running' so always apply this filter
-        search_filter.update({'instance_state': args.instance_state})
-
-    elif args.resource == 'elb':
-        instances = SearchElbInstances(aws_accounts, aws_regions)
-
-        if args.instance_name:
-            search_filter.update({'instance_name': args.instance_name})
-        if args.instance_dns_name:
-            search_filter.update({'instance_dns_name': args.instance_dns_name})
-    else:
-        print("unsupported AWS resource: {}".format(args.resource))
-
-    instances.filter(search_filter)
-    instances.print_instances(
-        verbose=args.verbose,
-        )
-
-if __name__ == '__main__':
-    main()
