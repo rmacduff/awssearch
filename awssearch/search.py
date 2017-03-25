@@ -128,7 +128,6 @@ class SearchEc2Instances(SearchAWSResources):
 
     methods:
      - filter: Apply a search filter to the curent set of EC2 instances.
-     - print_ec2_data: Display the current set of EC2 instances.
     """
 
     display_fields = [
@@ -192,11 +191,10 @@ class SearchEc2Instances(SearchAWSResources):
                 session = boto3.Session(profile_name=account, region_name=region)
                 ec2 = session.resource('ec2')
 
-                ec2_state = 'running'
                 ec2_filter = [
                     {
                         'Name': 'instance-state-name',
-                        'Values': [ec2_state],
+                        'Values': ['running', 'stopped'],
                     },
                     {
                         'Name': 'tag:Name',
@@ -355,7 +353,7 @@ def parse_commandline_args():
     parser_ec2.add_argument('-n', '--name',
                             dest='instance_name',)
     parser_ec2.add_argument('-s', '--state',
-                            dest='ec2_instance_state',
+                            dest='instance_state',
                             default='running',
                             choices=('running', 'stopped', 'terminated'))
     parser_ec2.add_argument('-t', '--tags',
@@ -398,6 +396,7 @@ def main():
             search_filter.update({'instance_tags': args.instance_tags})
         if args.instance_ip:
             search_filter.update({'instance_ip': args.instance_ip})
+        search_filter.update({'instance_state': args.instance_state})
 
     elif args.resource == 'elb':
         instances = SearchElbInstances(aws_accounts, AWS_REGIONS)
