@@ -5,9 +5,11 @@ A tool for retrieving basic information from the running EC2 instances.
 from __future__ import print_function
 import abc
 import argparse
+import os
 
 from terminaltables import AsciiTable
 import boto3
+import yaml
 
 from resources import Ec2Instance, ElbInstance
 
@@ -377,24 +379,30 @@ def parse_commandline_args():
 
     return parser.parse_args()
 
+def parse_config():
+    """Return a dict representing the configuration
+
+    """
+    with open(os.path.expanduser('~/.aws-search.yml')) as config_fh:
+        return yaml.load(config_fh)
+
+
 def main():
     """Main point of entry.
     """
-    # move these variables into a config file
-    AWS_ACCOUNTS = ['mctprod', 'mctqa']
-    AWS_REGIONS = ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2']
 
+    conf = parse_config()
     args = parse_commandline_args()
 
     if args.aws_account == 'all':
-        aws_accounts = AWS_ACCOUNTS
+        aws_accounts = conf['aws_accounts']
     else:
         aws_accounts = [args.aws_account]
 
     search_filter = {}
 
     if args.resource == 'ec2':
-        instances = SearchEc2Instances(aws_accounts, AWS_REGIONS)
+        instances = SearchEc2Instances(aws_accounts, conf['aws_regions'])
 
         if args.instance_name:
             search_filter.update({'instance_name': args.instance_name})
@@ -407,7 +415,7 @@ def main():
         search_filter.update({'instance_state': args.instance_state})
 
     elif args.resource == 'elb':
-        instances = SearchElbInstances(aws_accounts, AWS_REGIONS)
+        instances = SearchElbInstances(aws_accounts, conf['aws_regions'])
 
         if args.instance_name:
             search_filter.update({'instance_name': args.instance_name})
