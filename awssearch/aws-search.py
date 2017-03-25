@@ -56,8 +56,11 @@ def parse_config():
     """Return a dict representing the configuration
 
     """
-    with open(os.path.expanduser('~/.aws-search.yml')) as config_fh:
-        return yaml.load(config_fh)
+    try:
+        with open(os.path.expanduser('~/.aws-search.yml')) as config_fh:
+            return yaml.load(config_fh)
+    except IOError:
+        raise IOError("please configure ~/.aws-search.yml")
 
 
 def main():
