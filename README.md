@@ -1,10 +1,6 @@
 # Search AWS Resources
 
-Query AWS resources across multiple accounts and regions.
-
-# Search EC2
-
-Search across multiple AWS accounts using certain criteria.
+Search for AWS resources across multiple accounts and regions.
 
 ```
 $ python awssearch/aws-search.py --help
@@ -40,7 +36,7 @@ $ python awssearch/aws-search.py ec2 --name prod-api
 +-------------+---------------------+------------+------------------+-----------------+-------------------+---------+
 ```
 
-Search in us-west-2 for ELBs that have the string "staging" in them.
+Search in us-west-2 for ELBs that have the string "staging" in the DNS name.
 
 ```
 $ python awssearch/aws-search.py -r us-west-2 elb --dns staging
