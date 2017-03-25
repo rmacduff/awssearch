@@ -226,6 +226,14 @@ class SearchEc2Instances(SearchAWSResources):
         """
         return "ssh://{}".format(ip_data) if ip_data else "n/a"
 
+    def _get_state_printable_value(self, state_data):
+        """Return the printable value for state.
+
+        Args:
+          - state_data: The tag to be printed. (string)
+        """
+        return state_data['Name']
+
     def _get_field_printable_value(self, instance, field_name):
         """Return a printable value for a given field.
 
@@ -237,6 +245,7 @@ class SearchEc2Instances(SearchAWSResources):
             'tags': self._get_tag_printable_value,
             'private_ip_address': self._get_ip_printable_value,
             'public_ip_address': self._get_ip_printable_value,
+            'state': self._get_state_printable_value,
             }
         field_data = getattr(instance, field_name)
         try:
