@@ -7,7 +7,7 @@ import abc
 from terminaltables import AsciiTable
 import boto3
 
-from resources import Ec2Instance, ElbInstance
+from instances import Ec2Instance, ElbInstance
 
 class SearchAWSResources(object):
     """Retrieve and operate on a set of AWS resources.
