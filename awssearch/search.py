@@ -18,7 +18,7 @@ class SearchAWSResources(object):
 
     methods:
      - filter: Apply a search filter to the curent set of EC2 instances.
-     - print_ec2_data: Display the current set of EC2 instances.
+     - print_instances: Display the current set of AWS instances.
     """
 
     def __init__(self, aws_accounts, aws_regions):
@@ -39,7 +39,7 @@ class SearchAWSResources(object):
         pass
 
     def filter(self, search_params):
-        """ Apply a filter to EC2 instances stored in instances. search_params is a dictionary
+        """ Apply a filter to the AWS instances stored in instances.
 
         Args:
           - search_params: A dictionary containing where each key-value pair
@@ -127,8 +127,7 @@ class SearchAWSResources(object):
 class SearchEc2Instances(SearchAWSResources):
     """Retrieve and operate on a set of EC2 instances.
 
-    methods:
-     - filter: Apply a search filter to the curent set of EC2 instances.
+    The public methods are available in the super class, SearchAWSResources.
     """
 
     display_fields = [
@@ -260,8 +259,7 @@ class SearchEc2Instances(SearchAWSResources):
 class SearchElbInstances(SearchAWSResources):
     """Retrieve and operate on a set of ELB instances.
 
-    methods:
-     - filter: Apply a search filter to the curent set of EC2 instances.
+    The public methods are available in the super class, SearchAWSResources.
     """
 
     display_fields = [
@@ -303,11 +301,6 @@ class SearchElbInstances(SearchAWSResources):
                 all_instances += [ElbInstance(instance, account)
                                   for instance in elb_instances['LoadBalancerDescriptions']]
         return all_instances
-
-
-    ###########################################################################
-    # Print related methods
-    ###########################################################################
 
     def _get_instances_printable_value(self, instances):
         """Return the printable value for a tag.
