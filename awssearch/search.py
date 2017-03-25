@@ -349,6 +349,9 @@ def parse_commandline_args():
     parser.add_argument('-a', '--account',
                         dest='aws_account',
                         default='all')
+    parser.add_argument('-r', '--region',
+                        dest='aws_regions',
+                        default='all')
     parser.add_argument('-v', '--verbose',
                         action='store_true',)
 
@@ -399,10 +402,15 @@ def main():
     else:
         aws_accounts = [args.aws_account]
 
+    if args.aws_regions == 'all':
+        aws_regions = conf['aws_regions']
+    else:
+        aws_regions = [args.aws_regions]
+
     search_filter = {}
 
     if args.resource == 'ec2':
-        instances = SearchEc2Instances(aws_accounts, conf['aws_regions'])
+        instances = SearchEc2Instances(aws_accounts, aws_regions)
 
         if args.instance_name:
             search_filter.update({'instance_name': args.instance_name})
@@ -412,10 +420,11 @@ def main():
             search_filter.update({'instance_tags': args.instance_tags})
         if args.instance_ip:
             search_filter.update({'instance_ip': args.instance_ip})
+        # State defaults to 'running' so always apply this filter
         search_filter.update({'instance_state': args.instance_state})
 
     elif args.resource == 'elb':
-        instances = SearchElbInstances(aws_accounts, conf['aws_regions'])
+        instances = SearchElbInstances(aws_accounts, aws_regions)
 
         if args.instance_name:
             search_filter.update({'instance_name': args.instance_name})
