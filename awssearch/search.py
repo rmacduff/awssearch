@@ -261,7 +261,6 @@ class SearchElbInstances(SearchAWSResources):
 
     methods:
      - filter: Apply a search filter to the curent set of EC2 instances.
-     - print_ec2_data: Display the current set of EC2 instances.
     """
 
     display_fields = [

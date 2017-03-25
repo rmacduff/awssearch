@@ -4,11 +4,6 @@ import abc
 class AWSInstance(object):
     """Represent a single AWS resource instance.
 
-    Gets passed in a boto3 EC2 resource from a session.
-
-    https://boto3.readthedocs.io/en/latest/guide/resources.html#resources
-    https://boto3.readthedocs.io/en/latest/guide/session.html
-
     """
 
     def __init__(self, instance, aws_account):
@@ -88,10 +83,16 @@ class Ec2Instance(AWSInstance):
 class ElbInstance(AWSInstance):
     """Represent a single ELB Instance.
 
-    Gets passed in a boto3 EC2 resource from a session.
+    Gets passed in an instance in the form of a 'LoadBalancerDescriptions'
+    dictionary as from an elb client session call to `describe_load_balancers`.
 
-    https://boto3.readthedocs.io/en/latest/guide/resources.html#resources
-    https://boto3.readthedocs.io/en/latest/guide/session.html
+    E.g.
+
+    session = boto3.Session(profile_name=account, region_name=region)
+    client = session.client('elb', region_name=region)
+    elb_instances = client.describe_load_balancers()
+    all_instances += [ElbInstance(instance, account)
+                      for instance in elb_instances['LoadBalancerDescriptions']]
 
     """
 
