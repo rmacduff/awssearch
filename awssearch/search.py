@@ -103,7 +103,6 @@ class SearchAWSResources(object):
         """
         table_data = []
         printable_fields = self._get_printable_fields(verbose)
-        print(printable_fields)
         table_data.append([name_tuple[1] for name_tuple in  printable_fields])
         for instance in self.instances:
             instance_data = []
@@ -184,7 +183,7 @@ class SearchEc2Instances(SearchAWSResources):
                 'verbose_display': False,
             },
     ]
- 
+
     def _get_instances(self):
         """ Return all ec2 instances in a list of Ec2Instance objects """
         all_instances = []
@@ -309,7 +308,7 @@ class SearchElbInstances(SearchAWSResources):
     ###########################################################################
     # Print related methods
     ###########################################################################
-    
+
     def _get_instances_printable_value(self, instances):
         """Return the printable value for a tag.
 
