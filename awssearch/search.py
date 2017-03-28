@@ -48,21 +48,21 @@ class SearchAWSResources(object):
         if len(search_params) == 0:
             return
 
-        final_results = []
+        intermed_results = []
         for field, value in search_params.items():
             results = [inst for inst in self.instances if inst.match(field, value)]
 
-            if len(final_results) != 0:
-                # This is not the first set of results
-                final_results_new = []
-                for instance in final_results:
-                    if instance in results:
-                        final_results_new.append(instance)
-                final_results = final_results_new
+            # Since we're effectively ANDing each set of results with each
+            # iteration, any empty list forces the results to be empty
+            if len(results) == 0:
+                self.instances = []
+
+            if len(intermed_results) == 0:
+                intermed_results = results
             else:
-                # This is the first set of search results
-                final_results = results
-        self.instances = final_results
+                intermed_results = [inst for inst in results if inst in intermed_results]
+
+        self.instances = intermed_results
 
     @classmethod
     def _get_printable_fields(cls, verbose):
