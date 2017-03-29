@@ -3,8 +3,8 @@
 Search for AWS resources across multiple accounts and regions.
 
 ```
-$ python awssearch/aws-search.py --help
-usage: aws-search.py [-h] [-a AWS_ACCOUNT] [-r AWS_REGIONS] [-v] {ec2,elb} ...
+$ awssearch --help
+usage: awssearch [-h] [-a AWS_ACCOUNT] [-r AWS_REGIONS] [-v] {ec2,elb} ...
 
 Query EC2 instances
 
@@ -26,7 +26,7 @@ optional arguments:
 Search across all accounts for EC2 instances that have the string "prod-api" in them.
 
 ```
-$ python awssearch/aws-search.py ec2 --name prod-api
+$ awssearch ec2 --name prod-api
 +-------------+---------------------+------------+------------------+-----------------+-------------------+---------+
 | Name        | Instance ID         | Placement  | Private IP       | Public IP       | Tags              | Account |
 +-------------+---------------------+------------+------------------+-----------------+-------------------+---------+
@@ -39,7 +39,7 @@ $ python awssearch/aws-search.py ec2 --name prod-api
 Search in us-west-2 for ELBs that have the string "staging" in the DNS name.
 
 ```
-$ python awssearch/aws-search.py -r us-west-2 elb --dns staging
+$ awssearch -r us-west-2 elb --dns staging
 +-------------+------------------------------------------------------+-------------------------+------------+
 | Name        | DNS Name                                             | Instances               | Account    |
 +-------------+------------------------------------------------------+-------------------------+------------+
@@ -51,11 +51,20 @@ $ python awssearch/aws-search.py -r us-west-2 elb --dns staging
 
 # Installation
 
-## Virtualenv
-Create a virtualenv and install the requirements listed in `requirements.txt`:
+## Pip
+
+Install into a virtualenv using pip.
 
 ```
-pip install -f requirements.txt
+pip install /path/to/aws-search
+```
+
+## Pipsi
+
+[Pipsi](https://github.com/mitsuhiko/pipsi) makes it easy to install Python packages that have scripts. It handles the setting up of virtualenvs so you don't have to worry about that!
+
+```
+pipsi install /path/to/aws-search
 ```
 
 ## Configuration
