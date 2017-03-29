@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """ A tool for searchiing for AWS resources across multiple accounts and 
 regions.
 """
