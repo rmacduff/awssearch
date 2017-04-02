@@ -133,17 +133,17 @@ class SearchEc2Instances(SearchAWSResources):
                 'verbose_display': False,
             },
             {
-                'name': 'instance_id',
+                'name': 'InstanceId',
                 'printable_name': "Instance ID",
                 'verbose_display': False,
             },
             {
-                'name': 'instance_type',
+                'name': 'InstanceType',
                 'printable_name': "Type",
                 'verbose_display': True,
             },
             {
-                'name': 'state',
+                'name': 'State',
                 'printable_name': "State",
                 'verbose_display': True,
             },
@@ -153,17 +153,17 @@ class SearchEc2Instances(SearchAWSResources):
                 'verbose_display': False,
             },
             {
-                'name': 'private_ip_address',
+                'name': 'PrivateIpAddress',
                 'printable_name': "Private IP",
                 'verbose_display': False,
             },
             {
-                'name': 'public_ip_address',
+                'name': 'PublicIpAddress',
                 'printable_name': "Public IP",
                 'verbose_display': False,
             },
             {
-                'name': 'tags',
+                'name': 'Tags',
                 'printable_name': "Tags",
                 'verbose_display': False,
             },
@@ -185,20 +185,10 @@ class SearchEc2Instances(SearchAWSResources):
         for account in self.aws_accounts:
             for region in self.aws_regions:
                 session = boto3.Session(profile_name=account, region_name=region)
-                ec2 = session.resource('ec2')
-
-                ec2_filter = [
-                    {
-                        'Name': 'instance-state-name',
-                        'Values': ['running', 'stopped'],
-                    },
-                    {
-                        'Name': 'tag:Name',
-                        'Values': ['*'],
-                    }]
-
-                running_instances = ec2.instances.filter(Filters=ec2_filter)
-                all_instances += [Ec2Instance(instance, account) for instance in running_instances]
+                client = session.client('ec2', region_name=region)
+                ec2_instances = client.describe_instances()['Reservations']
+                all_instances += [Ec2Instance(instance['Instances'][0], account)
+                                  for instance in ec2_instances if len(instance) != 0]
         return all_instances
 
     def _get_tag_printable_value(self, tag_data):
@@ -210,9 +200,9 @@ class SearchEc2Instances(SearchAWSResources):
         printable_tag_data = []
         for tags in tag_data:
             if tags['Key'] != 'Name':
-                printable_tag_data.append("{}:{}".format(tags['Key'], tags['Value']))
+                printable_tag_data.append("{}={}".format(tags['Key'], tags['Value']))
             printable_tag_data.sort()
-        return ", ".join(printable_tag_data)
+        return ",".join(printable_tag_data)
 
     def _get_ip_printable_value(self, ip_data):
         """Return the printable value for an IP.
@@ -238,10 +228,10 @@ class SearchEc2Instances(SearchAWSResources):
           - field_name: The field that is to be printed. (string)
         """
         field_format_functions = {
-            'tags': self._get_tag_printable_value,
-            'private_ip_address': self._get_ip_printable_value,
-            'public_ip_address': self._get_ip_printable_value,
-            'state': self._get_state_printable_value,
+            'Tags': self._get_tag_printable_value,
+            'PrivateIpAddress': self._get_ip_printable_value,
+            'PublicIpAddress': self._get_ip_printable_value,
+            'State': self._get_state_printable_value,
             }
         field_data = getattr(instance, field_name)
         try:
