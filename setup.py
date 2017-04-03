@@ -13,7 +13,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='awssearch',
 
-    version='0.0.1',
+    version='0.3.0',
 
     description='Search AWS inventory across accounts and regions',
     long_description=long_description,

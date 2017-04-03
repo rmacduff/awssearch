@@ -11,6 +11,7 @@ import os
 import yaml
 
 from search import SearchEc2Instances, SearchElbInstances
+from version import __version__
 
 def parse_commandline_args():
     """Parse commandline arguments.
@@ -26,6 +27,8 @@ def parse_commandline_args():
                         default='all')
     parser.add_argument('-v', '--verbose',
                         action='store_true',)
+    parser.add_argument('--version',
+                        action='version', version='%(prog)s ' + __version__)
 
     subparsers = parser.add_subparsers(help='AWS resource to search for', dest='resource')
 
@@ -63,7 +66,6 @@ def parse_config():
             return yaml.load(config_fh)
     except IOError:
         raise IOError("please configure ~/.aws-search.yml")
-
 
 def main():
     """Main point of entry.
