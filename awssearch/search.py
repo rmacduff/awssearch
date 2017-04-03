@@ -72,7 +72,7 @@ class SearchAWSResources(object):
           - verbose: Include all fields or not. (boolean)
         """
         fields = []
-        for field in cls.display_fields:
+        for field in cls._get_instance_fields():
             field_name = field['name']
             field_printable_name = field['printable_name']
             field_verbose = field['verbose_display']
@@ -126,58 +126,11 @@ class SearchEc2Instances(SearchAWSResources):
     The public methods are available in the super class, SearchAWSResources.
     """
 
-    display_fields = [
-            {
-                'name': 'instance_name',
-                'printable_name': 'Name',
-                'verbose_display': False,
-            },
-            {
-                'name': 'InstanceId',
-                'printable_name': "Instance ID",
-                'verbose_display': False,
-            },
-            {
-                'name': 'InstanceType',
-                'printable_name': "Type",
-                'verbose_display': True,
-            },
-            {
-                'name': 'State',
-                'printable_name': "State",
-                'verbose_display': True,
-            },
-            {
-                'name': 'instance_placement',
-                'printable_name': "Placement",
-                'verbose_display': False,
-            },
-            {
-                'name': 'PrivateIpAddress',
-                'printable_name': "Private IP",
-                'verbose_display': False,
-            },
-            {
-                'name': 'PublicIpAddress',
-                'printable_name': "Public IP",
-                'verbose_display': False,
-            },
-            {
-                'name': 'Tags',
-                'printable_name': "Tags",
-                'verbose_display': False,
-            },
-            {
-                'name': 'launch_time',
-                'printable_name': "Launce Time",
-                'verbose_display': True,
-            },
-            {
-                'name': 'aws_account',
-                'printable_name': "Account",
-                'verbose_display': False,
-            },
-    ]
+    @staticmethod
+    def _get_instance_fields():
+        """Return the instance_field strucuture from Ec2Instance.
+        """
+        return Ec2Instance.instance_fields
 
     def _get_instances(self):
         """ Return all ec2 instances in a list of Ec2Instance objects """
@@ -248,33 +201,11 @@ class SearchElbInstances(SearchAWSResources):
     The public methods are available in the super class, SearchAWSResources.
     """
 
-    display_fields = [
-            {
-                'name': 'instance_name',
-                'printable_name': 'Name',
-                'verbose_display': False,
-            },
-            {
-                'name': 'DNSName',
-                'printable_name': "DNS Name",
-                'verbose_display': False,
-            },
-            {
-                'name': 'Instances',
-                'printable_name': "Instances",
-                'verbose_display': False,
-            },
-            {
-                'name': 'CreatedTime',
-                'printable_name': "Created Time",
-                'verbose_display': True,
-            },
-            {
-                'name': 'aws_account',
-                'printable_name': "Account",
-                'verbose_display': False,
-            },
-    ]
+    @staticmethod
+    def _get_instance_fields():
+        """Return the instance_field strucuture from ElbInstance.
+        """
+        return ElbInstance.instance_fields
 
     def _get_instances(self):
         """ Return all ELB instances in a list of ElbInstance objects """

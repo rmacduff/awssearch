@@ -41,6 +41,59 @@ class Ec2Instance(AWSInstance):
 
     """
 
+    instance_fields = [
+            {
+                'name': 'instance_name',
+                'printable_name': 'Name',
+                'verbose_display': False,
+            },
+            {
+                'name': 'InstanceId',
+                'printable_name': "Instance ID",
+                'verbose_display': False,
+            },
+            {
+                'name': 'InstanceType',
+                'printable_name': "Type",
+                'verbose_display': True,
+            },
+            {
+                'name': 'State',
+                'printable_name': "State",
+                'verbose_display': True,
+            },
+            {
+                'name': 'instance_placement',
+                'printable_name': "Placement",
+                'verbose_display': False,
+            },
+            {
+                'name': 'PrivateIpAddress',
+                'printable_name': "Private IP",
+                'verbose_display': False,
+            },
+            {
+                'name': 'PublicIpAddress',
+                'printable_name': "Public IP",
+                'verbose_display': False,
+            },
+            {
+                'name': 'Tags',
+                'printable_name': "Tags",
+                'verbose_display': False,
+            },
+            {
+                'name': 'launch_time',
+                'printable_name': "Launce Time",
+                'verbose_display': True,
+            },
+            {
+                'name': 'aws_account',
+                'printable_name': "Account",
+                'verbose_display': False,
+            },
+    ]
+
     def __getitem__(self, item):
         if item == 'aws_account':
             return self.aws_account
@@ -101,6 +154,35 @@ class ElbInstance(AWSInstance):
                       for instance in elb_instances['LoadBalancerDescriptions']]
 
     """
+
+    instance_fields = [
+            {
+                'name': 'instance_name',
+                'printable_name': 'Name',
+                'verbose_display': False,
+            },
+            {
+                'name': 'DNSName',
+                'printable_name': "DNS Name",
+                'verbose_display': False,
+            },
+            {
+                'name': 'Instances',
+                'printable_name': "Instances",
+                'verbose_display': False,
+            },
+            {
+                'name': 'CreatedTime',
+                'printable_name': "Created Time",
+                'verbose_display': True,
+            },
+            {
+                'name': 'aws_account',
+                'printable_name': "Account",
+                'verbose_display': False,
+            },
+    ]
+
     def __getitem__(self, item):
         if item == 'aws_account':
             return self.aws_account
