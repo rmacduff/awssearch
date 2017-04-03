@@ -20,24 +20,9 @@ class AWSInstance(object):
                 output.append("{}: {}".format(attr, getattr(self.instance, attr)))
         return "\n".join(output)
 
-    @abc.abstractmethod
-    def __getattr__(self, attribute):
-        pass
-
-    def _get_attribute(self, attribute):
-        try:
-            return self.instance.__getitem__(attribute)
-        except KeyError:
-            return []
-
     def __getitem__(self, item):
         try:
-            #print(self.instance)
-            #print(item)
-            #print(self.instance[item])
             return self.instance[item]
-            #return self.instance.__getitem__(item)
-            #return self.__getitem__(item)
         except KeyError:
             return []
 
@@ -55,16 +40,6 @@ class Ec2Instance(AWSInstance):
     https://boto3.readthedocs.io/en/latest/guide/session.html
 
     """
-
-    #def __getattr__(self, attribute):
-    #    if attribute == 'aws_account':
-    #        return self.aws_account
-    #    elif attribute == 'instance_name':
-    #        return self._get_name()
-    #    elif attribute == 'instance_placement':
-    #        return self._get_attribute('Placement')['AvailabilityZone']
-    #    else:
-    #        return self._get_attribute(attribute)
 
     def __getitem__(self, item):
         if item == 'aws_account':
