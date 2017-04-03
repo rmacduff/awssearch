@@ -126,25 +126,24 @@ class ElbInstance(AWSInstance):
                       for instance in elb_instances['LoadBalancerDescriptions']]
 
     """
-
-    def __getattr__(self, attribute):
-        if attribute == 'aws_account':
+    def __getitem__(self, item):
+        if item == 'aws_account':
             return self.aws_account
-        elif attribute == 'instance_name':
+        elif item == 'Name' or item == 'instance_name':
             return self._get_name()
-        elif attribute == 'instance_placement':
-            return self._get_attribute('placement')['AvailabilityZone']
+        elif item == 'instance_placement':
+            return super(ElbInstance, self).__getitem__('Placement')['AvailabilityZone']
         else:
-            return self._get_attribute(attribute)
+            return super(ElbInstance, self).__getitem__(item)
 
     def _get_name(self):
-        return self._get_attribute('LoadBalancerName')
+        return self['LoadBalancerName']
 
     def match(self, attribute, value):
         if attribute == 'instance_dns_name':
             real_attribute = 'DNSName'
         else:
             real_attribute = attribute
-        field_value = self.__getattr__(real_attribute)
+        field_value = self[real_attribute]
         if value.lower() in field_value.lower():
             return True

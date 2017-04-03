@@ -310,7 +310,7 @@ class SearchElbInstances(SearchAWSResources):
         field_format_functions = {
             'Instances': self._get_instances_printable_value,
             }
-        field_data = getattr(instance, field_name)
+        field_data = instance[field_name]
         try:
             printable_data = field_format_functions[field_name](field_data)
         except KeyError:
