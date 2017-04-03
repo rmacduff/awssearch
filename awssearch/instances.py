@@ -30,6 +30,17 @@ class AWSInstance(object):
         except KeyError:
             return []
 
+    def __getitem__(self, item):
+        try:
+            #print(self.instance)
+            #print(item)
+            #print(self.instance[item])
+            return self.instance[item]
+            #return self.instance.__getitem__(item)
+            #return self.__getitem__(item)
+        except KeyError:
+            return []
+
     @abc.abstractmethod
     def match(self, attribute, value):
         pass
@@ -45,40 +56,54 @@ class Ec2Instance(AWSInstance):
 
     """
 
-    def __getattr__(self, attribute):
-        if attribute == 'aws_account':
+    #def __getattr__(self, attribute):
+    #    if attribute == 'aws_account':
+    #        return self.aws_account
+    #    elif attribute == 'instance_name':
+    #        return self._get_name()
+    #    elif attribute == 'instance_placement':
+    #        return self._get_attribute('Placement')['AvailabilityZone']
+    #    else:
+    #        return self._get_attribute(attribute)
+
+    def __getitem__(self, item):
+        if item == 'aws_account':
             return self.aws_account
-        elif attribute == 'instance_name':
+        elif item == 'Name' or item == 'instance_name':
             return self._get_name()
-        elif attribute == 'instance_placement':
-            return self._get_attribute('Placement')['AvailabilityZone']
+        elif item == 'instance_placement':
+            return super(Ec2Instance, self).__getitem__('Placement')['AvailabilityZone']
         else:
-            return self._get_attribute(attribute)
+            return super(Ec2Instance, self).__getitem__(item)
 
     def _get_name(self):
-        for tag in self._get_attribute('Tags'):
+        for tag in self['Tags']:
             if tag['Key'] == 'Name':
                 return tag['Value']
 
     def match(self, attribute, value):
         if attribute == 'instance_tags':
-            for tags in self._get_attribute('Tags'):
+            for tags in self['Tags']:
                 if tags['Key'] != 'Name':
                     tag_value = "{}:{}".format(tags['Key'], tags['Value'])
                     if value.lower() in tag_value.lower():
                         return True
         elif attribute == 'instance_ip':
-            public_ip = self._get_attribute('PublicIpAddress')
-            private_ip = self._get_attribute('PrivateIpAddress')
+            public_ip = self['PublicIpAddress']
+            private_ip = self['PrivateIpAddress']
             if (private_ip and value in private_ip) or \
                 (public_ip  and value in public_ip):
                 return True
         elif attribute == 'instance_state':
-            running_state = self._get_attribute('State')['Name']
+            running_state = self['State']['Name']
             if value == running_state:
                 return True
+        elif attribute == 'instance_name':
+            name = self['Name']
+            if name and value.lower() in name.lower():
+                return True
         else:
-            field_value = self.__getattr__(attribute)
+            field_value = self[attribute]
             try:
                 if value.lower() in field_value.lower():
                     return True

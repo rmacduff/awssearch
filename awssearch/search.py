@@ -233,7 +233,7 @@ class SearchEc2Instances(SearchAWSResources):
             'PublicIpAddress': self._get_ip_printable_value,
             'State': self._get_state_printable_value,
             }
-        field_data = getattr(instance, field_name)
+        field_data = instance[field_name]
         try:
             printable_data = field_format_functions[field_name](field_data)
         except KeyError:
