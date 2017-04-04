@@ -7,7 +7,9 @@ regions.
 from __future__ import print_function
 import argparse
 import os
+import sys
 
+from botocore import exceptions
 import yaml
 
 from search import SearchEc2Instances, SearchElbInstances
@@ -87,8 +89,7 @@ def main():
     search_filter = {}
 
     if args.resource == 'ec2':
-        instances = SearchEc2Instances(aws_accounts, aws_regions)
-
+        aws_resource_type = SearchEc2Instances
         if args.instance_name:
             search_filter.update({'instance_name': args.instance_name})
         if args.instance_id:
@@ -101,8 +102,7 @@ def main():
         search_filter.update({'instance_state': args.instance_state})
 
     elif args.resource == 'elb':
-        instances = SearchElbInstances(aws_accounts, aws_regions)
-
+        aws_resource_type = SearchElbInstances
         if args.instance_name:
             search_filter.update({'instance_name': args.instance_name})
         if args.instance_dns_name:
@@ -110,6 +110,14 @@ def main():
     else:
         print("unsupported AWS resource: {}".format(args.resource))
 
+    try:
+        instances = aws_resource_type(aws_accounts, aws_regions)
+    except (exceptions.ProfileNotFound, exceptions.NoCredentialsError):
+        print(("There was an issue matching the accounts in "
+               "~/.awssearch.yml with the account profiles in "
+               "~/.aws/credentials`. "
+               "\nSee the README for more details."))
+        sys.exit(1)
     instances.filter(search_filter)
     instances.print_instances(
         verbose=args.verbose,
