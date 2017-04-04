@@ -64,6 +64,10 @@ class SearchAWSResources(object):
 
         self.instances = intermed_results
 
+    @staticmethod
+    def _init_aws_session(account, region):
+        return boto3.Session(profile_name=account, region_name=region)
+
     @classmethod
     def _get_printable_fields(cls, verbose):
         """Return a list of the printable fields.
@@ -137,7 +141,7 @@ class SearchEc2Instances(SearchAWSResources):
         all_instances = []
         for account in self.aws_accounts:
             for region in self.aws_regions:
-                session = boto3.Session(profile_name=account, region_name=region)
+                session = SearchAWSResources._init_aws_session(account, region)
                 client = session.client('ec2', region_name=region)
                 ec2_instances = client.describe_instances()['Reservations']
                 all_instances += [Ec2Instance(instance['Instances'][0], account)
@@ -212,7 +216,7 @@ class SearchElbInstances(SearchAWSResources):
         all_instances = []
         for account in self.aws_accounts:
             for region in self.aws_regions:
-                session = boto3.Session(profile_name=account, region_name=region)
+                session = SearchAWSResources._init_aws_session(account, region)
                 client = session.client('elb', region_name=region)
                 elb_instances = client.describe_load_balancers()
                 all_instances += [ElbInstance(instance, account)
