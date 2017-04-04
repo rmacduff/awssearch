@@ -69,7 +69,7 @@ pipsi install /path/to/aws-search
 
 ## Configuration
 
-Speficy the AWS accounts and regions inside `~/.aws-search.yml`.
+Specify the AWS accounts and regions inside `~/.awssearch.yml`.
 
 Example:
 ```
@@ -84,5 +84,6 @@ aws_regions:
 ```
 
 The values for `aws_accounts` must match the AWS accounts you have configured 
-in `~/.aws/config` and `~/.aws/credentials`.
+in `~/.aws/credentials`.
 
+Follow the [Configuring the AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) guide if you haven't already configured your computer to use your AWS security credentials.

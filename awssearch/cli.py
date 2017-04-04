@@ -64,10 +64,10 @@ def parse_config():
 
     """
     try:
-        with open(os.path.expanduser('~/.aws-search.yml')) as config_fh:
+        with open(os.path.expanduser('~/.awssearch.yml')) as config_fh:
             return yaml.load(config_fh)
     except IOError:
-        raise IOError("please configure ~/.aws-search.yml")
+        raise IOError("please configure ~/.awssearch.yml")
 
 def main():
     """Main point of entry.
