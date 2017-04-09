@@ -83,8 +83,8 @@ class Ec2Instance(AWSInstance):
                 'verbose_display': False,
             },
             {
-                'name': 'launch_time',
-                'printable_name': "Launce Time",
+                'name': 'LaunchTime',
+                'printable_name': "Launch Time",
                 'verbose_display': True,
             },
             {
