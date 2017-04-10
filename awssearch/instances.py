@@ -113,7 +113,7 @@ class Ec2Instance(AWSInstance):
         if attribute == 'instance_tags':
             for tags in self['Tags']:
                 if tags['Key'] != 'Name':
-                    tag_value = "{}:{}".format(tags['Key'], tags['Value'])
+                    tag_value = "{}={}".format(tags['Key'], tags['Value'])
                     if value.lower() in tag_value.lower():
                         return True
         elif attribute == 'instance_ip':
@@ -168,7 +168,7 @@ class Ec2Instance(AWSInstance):
             if tags['Key'] != 'Name':
                 printable_tag_data.append("{}={}".format(tags['Key'], tags['Value']))
             printable_tag_data.sort()
-        return ",".join(printable_tag_data)
+        return "; ".join(printable_tag_data)
 
     @staticmethod
     def _get_ip_printable_value(ip_data):
