@@ -68,24 +68,6 @@ class SearchAWSResources(object):
     def _init_aws_session(account, region):
         return boto3.Session(profile_name=account, region_name=region)
 
-    @classmethod
-    def _get_printable_fields(cls, verbose):
-        """Return a list of the printable fields.
-
-        Args:
-          - verbose: Include all fields or not. (boolean)
-        """
-        fields = []
-        for field in cls._get_instance_fields():
-            field_name = field['name']
-            field_printable_name = field['printable_name']
-            field_verbose = field['verbose_display']
-            if verbose and field_verbose:
-                fields.append((field_name, field_printable_name))
-            elif not field_verbose:
-                fields.append((field_name, field_printable_name))
-        return fields
-
     def _print_long_format(self, verbose):
         """Print instances in long format.
 
@@ -93,24 +75,6 @@ class SearchAWSResources(object):
         """
         raise NotImplementedError('This method has not been implemented.')
 
-    def _print_table_format(self, verbose):
-        """Print ec2info in a table.
-
-        Print the information contained in ec2info in a tabular format.
-
-        Args:
-          - verbose: Print extra details or not. Boolean value.
-        """
-        table_data = []
-        printable_fields = self._get_printable_fields(verbose)
-        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
-        for instance in self.instances:
-            instance_data = []
-            for name, _ in printable_fields:
-                instance_data.append(self._get_field_printable_value(instance, name))
-            table_data.append(instance_data)
-        table = AsciiTable(table_data)
-        print(table.table)
 
     def print_instances(self, print_format='table', verbose=False):
         """Print ec2data in format specified by format
@@ -130,12 +94,6 @@ class SearchEc2Instances(SearchAWSResources):
     The public methods are available in the super class, SearchAWSResources.
     """
 
-    @staticmethod
-    def _get_instance_fields():
-        """Return the instance_field strucuture from Ec2Instance.
-        """
-        return Ec2Instance.instance_fields
-
     def _get_instances(self):
         """ Return all ec2 instances in a list of Ec2Instance objects """
         all_instances = []
@@ -148,68 +106,30 @@ class SearchEc2Instances(SearchAWSResources):
                                   for instance in ec2_instances if len(instance) != 0]
         return all_instances
 
-    def _get_tag_printable_value(self, tag_data):
-        """Return the printable value for a tag.
+    def _print_table_format(self, verbose):
+        """Print ec2info in a table.
+
+        Print the information contained in ec2info in a tabular format.
 
         Args:
-          - tag_data: The tag to be printed. (string)
+          - verbose: Print extra details or not. Boolean value.
         """
-        printable_tag_data = []
-        for tags in tag_data:
-            if tags['Key'] != 'Name':
-                printable_tag_data.append("{}={}".format(tags['Key'], tags['Value']))
-            printable_tag_data.sort()
-        return ",".join(printable_tag_data)
-
-    def _get_ip_printable_value(self, ip_data):
-        """Return the printable value for an IP.
-
-        Args:
-          - ip_data: The IP to be printed. (string)
-        """
-        return "ssh://{}".format(ip_data) if ip_data else "n/a"
-
-    def _get_state_printable_value(self, state_data):
-        """Return the printable value for state.
-
-        Args:
-          - state_data: The tag to be printed. (string)
-        """
-        return state_data['Name']
-
-    def _get_field_printable_value(self, instance, field_name):
-        """Return a printable value for a given field.
-
-        Args:
-          - ec2_instance: The EC2 instance that is being printed. (Ec2Instance)
-          - field_name: The field that is to be printed. (string)
-        """
-        field_format_functions = {
-            'Tags': self._get_tag_printable_value,
-            'PrivateIpAddress': self._get_ip_printable_value,
-            'PublicIpAddress': self._get_ip_printable_value,
-            'State': self._get_state_printable_value,
-            }
-        field_data = instance[field_name]
-        try:
-            printable_data = field_format_functions[field_name](field_data)
-        except KeyError:
-            printable_data = field_data
-
-        return printable_data
-
+        table_data = []
+        printable_fields = Ec2Instance.get_printable_fields(verbose)
+        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
+        for instance in self.instances:
+            instance_data = []
+            for name, _ in printable_fields:
+                instance_data.append(Ec2Instance.get_field_printable_value(instance, name))
+            table_data.append(instance_data)
+        table = AsciiTable(table_data)
+        print(table.table)
 
 class SearchElbInstances(SearchAWSResources):
     """Retrieve and operate on a set of ELB instances.
 
     The public methods are available in the super class, SearchAWSResources.
     """
-
-    @staticmethod
-    def _get_instance_fields():
-        """Return the instance_field strucuture from ElbInstance.
-        """
-        return ElbInstance.instance_fields
 
     def _get_instances(self):
         """ Return all ELB instances in a list of ElbInstance objects """
@@ -223,32 +143,21 @@ class SearchElbInstances(SearchAWSResources):
                                   for instance in elb_instances['LoadBalancerDescriptions']]
         return all_instances
 
-    def _get_instances_printable_value(self, instances):
-        """Return the printable value for a tag.
+    def _print_table_format(self, verbose):
+        """Print ec2info in a table.
+
+        Print the information contained in ec2info in a tabular format.
 
         Args:
-          - tag_data: The tag to be printed. (string)
+          - verbose: Print extra details or not. Boolean value.
         """
-        printable_instance_data = []
-        for instance in instances:
-            printable_instance_data.append("{}".format(instance['InstanceId']))
-        return ", ".join(printable_instance_data)
-
-    def _get_field_printable_value(self, instance, field_name):
-        """Return a printable value for a given field.
-
-        Args:
-          - instance: The AWS resource instance that is being printed. (AwsInstance)
-          - field_name: The field that is to be printed. (string)
-        """
-        field_format_functions = {}
-        field_format_functions = {
-            'Instances': self._get_instances_printable_value,
-            }
-        field_data = instance[field_name]
-        try:
-            printable_data = field_format_functions[field_name](field_data)
-        except KeyError:
-            printable_data = field_data
-
-        return printable_data
+        table_data = []
+        printable_fields = ElbInstance.get_printable_fields(verbose)
+        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
+        for instance in self.instances:
+            instance_data = []
+            for name, _ in printable_fields:
+                instance_data.append(ElbInstance.get_field_printable_value(instance, name))
+            table_data.append(instance_data)
+        table = AsciiTable(table_data)
+        print(table.table)

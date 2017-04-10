@@ -138,6 +138,78 @@ class Ec2Instance(AWSInstance):
             except AttributeError:
                 return False
 
+    @staticmethod
+    def get_printable_fields(verbose):
+        """Return a list of the printable fields.
+
+        Args:
+          - verbose: Include all fields or not. (boolean)
+        """
+        fields = []
+        for field in Ec2Instance.instance_fields:
+            field_name = field['name']
+            field_printable_name = field['printable_name']
+            field_verbose = field['verbose_display']
+            if verbose and field_verbose:
+                fields.append((field_name, field_printable_name))
+            elif not field_verbose:
+                fields.append((field_name, field_printable_name))
+        return fields
+
+    @staticmethod
+    def _get_tag_printable_value(tag_data):
+        """Return the printable value for a tag.
+
+        Args:
+          - tag_data: The tag to be printed. (string)
+        """
+        printable_tag_data = []
+        for tags in tag_data:
+            if tags['Key'] != 'Name':
+                printable_tag_data.append("{}={}".format(tags['Key'], tags['Value']))
+            printable_tag_data.sort()
+        return ",".join(printable_tag_data)
+
+    @staticmethod
+    def _get_ip_printable_value(ip_data):
+        """Return the printable value for an IP.
+
+        Args:
+          - ip_data: The IP to be printed. (string)
+        """
+        return "ssh://{}".format(ip_data) if ip_data else "n/a"
+
+    @staticmethod
+    def _get_state_printable_value(state_data):
+        """Return the printable value for state.
+
+        Args:
+          - state_data: The tag to be printed. (string)
+        """
+        return state_data['Name']
+
+    @staticmethod
+    def get_field_printable_value(instance, field_name):
+        """Return a printable value for a given field.
+
+        Args:
+          - ec2_instance: The EC2 instance that is being printed. (Ec2Instance)
+          - field_name: The field that is to be printed. (string)
+        """
+        field_format_functions = {
+            'Tags': Ec2Instance._get_tag_printable_value,
+            'PrivateIpAddress': Ec2Instance._get_ip_printable_value,
+            'PublicIpAddress': Ec2Instance._get_ip_printable_value,
+            'State': Ec2Instance._get_state_printable_value,
+            }
+        field_data = instance[field_name]
+        try:
+            printable_data = field_format_functions[field_name](field_data)
+        except KeyError:
+            printable_data = field_data
+
+        return printable_data
+
 
 class ElbInstance(AWSInstance):
     """Represent a single ELB Instance.
@@ -168,7 +240,7 @@ class ElbInstance(AWSInstance):
             },
             {
                 'name': 'Instances',
-                'printable_name': "Instances",
+                'printable_name': "EC2 Instances",
                 'verbose_display': False,
             },
             {
@@ -204,3 +276,54 @@ class ElbInstance(AWSInstance):
         field_value = self[real_attribute]
         if value.lower() in field_value.lower():
             return True
+
+    #@classmethod
+    @staticmethod
+    def get_printable_fields(verbose):
+        """Return a list of the printable fields.
+
+        Args:
+          - verbose: Include all fields or not. (boolean)
+        """
+        fields = []
+        for field in ElbInstance.instance_fields:
+            field_name = field['name']
+            field_printable_name = field['printable_name']
+            field_verbose = field['verbose_display']
+            if verbose and field_verbose:
+                fields.append((field_name, field_printable_name))
+            elif not field_verbose:
+                fields.append((field_name, field_printable_name))
+        return fields
+
+    @staticmethod
+    def _get_instances_printable_value(instances):
+        """Return the printable value ths set of EC2 instances for .
+
+        Args:
+          - tag_data: The tag to be printed. (string)
+        """
+        printable_instance_data = []
+        for instance in instances:
+            printable_instance_data.append("{}".format(instance['InstanceId']))
+        return ", ".join(printable_instance_data)
+
+    @staticmethod
+    def get_field_printable_value(instance, field_name):
+        """Return a printable value for a given field.
+
+        Args:
+          - instance: The AWS resource instance that is being printed. (AwsInstance)
+          - field_name: The field that is to be printed. (string)
+        """
+        field_format_functions = {}
+        field_format_functions = {
+            'Instances': ElbInstance._get_instances_printable_value,
+            }
+        field_data = instance[field_name]
+        try:
+            printable_data = field_format_functions[field_name](field_data)
+        except KeyError:
+            printable_data = field_data
+
+        return printable_data
