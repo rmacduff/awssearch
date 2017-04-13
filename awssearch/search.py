@@ -101,9 +101,12 @@ class SearchEc2Instances(SearchAWSResources):
             for region in self.aws_regions:
                 session = SearchAWSResources._init_aws_session(account, region)
                 client = session.client('ec2', region_name=region)
-                ec2_instances = client.describe_instances()['Reservations']
-                all_instances += [Ec2Instance(instance['Instances'][0], account)
-                                  for instance in ec2_instances if len(instance) != 0]
+                all_instances += [Ec2Instance(instance, account) for instance in
+                                    [reservation['Instances'][0] for reservation in
+                                      client.describe_instances()['Reservations']
+                                        if len(reservation) != 0
+                                    ]
+                                 ]
         return all_instances
 
     def _print_table_format(self, verbose):
@@ -161,3 +164,4 @@ class SearchElbInstances(SearchAWSResources):
             table_data.append(instance_data)
         table = AsciiTable(table_data)
         print(table.table)
+
