@@ -172,7 +172,7 @@ class Ec2Instance(AWSInstance):
             if tags['Key'] != 'Name':
                 printable_tag_data.append("{}={}".format(tags['Key'], tags['Value']))
             printable_tag_data.sort()
-        return "; ".join(printable_tag_data)
+        return "\n".join(printable_tag_data)
 
     @staticmethod
     def _get_ip_printable_value(ip_data):
@@ -310,7 +310,7 @@ class ElbInstance(AWSInstance):
         printable_instance_data = []
         for instance in instances:
             printable_instance_data.append("{}".format(instance['InstanceId']))
-        return ", ".join(printable_instance_data)
+        return "\n".join(printable_instance_data)
 
     @staticmethod
     def get_field_printable_value(instance, field_name):
