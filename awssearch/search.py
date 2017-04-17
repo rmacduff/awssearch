@@ -27,12 +27,24 @@ class SearchAWSResources(object):
         """
         self.aws_regions = aws_regions
         self.aws_accounts = aws_accounts
-        self.instances = self._get_instances()
+        self.instances = self._get_all_instances()
+
+    @staticmethod
+    def _init_aws_session(account, region):
+        return boto3.Session(profile_name=account, region_name=region)
 
     @abc.abstractmethod
-    def _get_instances(self):
-        """ Return all instances of a given type"""
+    def _get_instances(account, region):
+        """ Return instances of a given type in the given account and region"""
         pass
+
+    def _get_all_instances(self):
+        """ Return all instances of a given tyoe in a list of instance objects """
+        all_instances = [self._get_instances(account, region)
+                         for account in self.aws_accounts
+                         for region in self.aws_regions]
+        # all_instances is a list of lists so we need to break those out into one list
+        return [instance for inst_list in all_instances for instance in inst_list]
 
     def filter(self, search_params):
         """ Apply a filter to the AWS instances stored in instances.
@@ -64,9 +76,6 @@ class SearchAWSResources(object):
 
         self.instances = intermed_results
 
-    @staticmethod
-    def _init_aws_session(account, region):
-        return boto3.Session(profile_name=account, region_name=region)
 
     def _print_long_format(self, verbose):
         """Print instances in long format.
@@ -94,20 +103,13 @@ class SearchEc2Instances(SearchAWSResources):
     The public methods are available in the super class, SearchAWSResources.
     """
 
-    def _get_instances(self):
-        """ Return all ec2 instances in a list of Ec2Instance objects """
-        all_instances = []
-        for account in self.aws_accounts:
-            for region in self.aws_regions:
-                session = SearchAWSResources._init_aws_session(account, region)
-                client = session.client('ec2', region_name=region)
-                all_instances += [Ec2Instance(instance, account) for instance in
-                                    [reservation['Instances'][0] for reservation in
-                                      client.describe_instances()['Reservations']
-                                        if len(reservation) != 0
-                                    ]
-                                 ]
-        return all_instances
+    @staticmethod
+    def _get_instances(account, region):
+         session = SearchAWSResources._init_aws_session(account, region)
+         client = session.client('ec2', region_name=region)
+         return  [Ec2Instance(instance, account)
+                  for reservations in client.describe_instances()['Reservations']
+                  for instance in reservations['Instances']]
 
     def _print_table_format(self, verbose):
         """Print ec2info in a table.
@@ -134,17 +136,12 @@ class SearchElbInstances(SearchAWSResources):
     The public methods are available in the super class, SearchAWSResources.
     """
 
-    def _get_instances(self):
-        """ Return all ELB instances in a list of ElbInstance objects """
-        all_instances = []
-        for account in self.aws_accounts:
-            for region in self.aws_regions:
-                session = SearchAWSResources._init_aws_session(account, region)
-                client = session.client('elb', region_name=region)
-                elb_instances = client.describe_load_balancers()
-                all_instances += [ElbInstance(instance, account)
-                                  for instance in elb_instances['LoadBalancerDescriptions']]
-        return all_instances
+    @staticmethod
+    def _get_instances(account, region):
+         session = SearchAWSResources._init_aws_session(account, region)
+         client = session.client('elb', region_name=region)
+         return   [ElbInstance(instance, account)
+                   for instance in client.describe_load_balancers()['LoadBalancerDescriptions']]
 
     def _print_table_format(self, verbose):
         """Print ec2info in a table.
