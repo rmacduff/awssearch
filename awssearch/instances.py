@@ -130,6 +130,10 @@ class Ec2Instance(AWSInstance):
             name = self['Name']
             if name and value.lower() in name.lower():
                 return True
+        elif attribute == 'instance_id':
+            name = self['InstanceId']
+            if name and value.lower() in name.lower():
+                return True
         else:
             field_value = self[attribute]
             try:
