@@ -84,6 +84,34 @@ class SearchAWSResources(object):
         """
         raise NotImplementedError('This method has not been implemented.')
 
+    @abc.abstractmethod
+    def _get_printable_fields(verbose):
+        pass
+
+    @abc.abstractmethod
+    def _get_field_printable_value(instance, name):
+        pass
+
+    def _print_table_format(self, verbose):
+        """Print ec2info in a table.
+
+        Print the information contained in ec2info in a tabular format.
+
+        Args:
+          - verbose: Print extra details or not. Boolean value.
+        """
+        table_data = []
+        printable_fields = self._get_printable_fields(verbose)
+        # Add the headers to the table
+        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
+        for instance in self.instances:
+            instance_data = []
+            for name, _ in printable_fields:
+                instance_data.append(self._get_field_printable_value(instance, name))
+            table_data.append(instance_data)
+        table = AsciiTable(table_data)
+        table.inner_row_border = True
+        print(table.table)
 
     def print_instances(self, print_format='table', verbose=False):
         """Print ec2data in format specified by format
@@ -111,24 +139,14 @@ class SearchEc2Instances(SearchAWSResources):
                   for reservations in client.describe_instances()['Reservations']
                   for instance in reservations['Instances']]
 
-    def _print_table_format(self, verbose):
-        """Print ec2info in a table.
+    @staticmethod
+    def _get_printable_fields(verbose):
+        return Ec2Instance.get_printable_fields(verbose)
 
-        Print the information contained in ec2info in a tabular format.
+    @staticmethod
+    def _get_field_printable_value(instance, name):
+        return Ec2Instance.get_field_printable_value(instance, name)
 
-        Args:
-          - verbose: Print extra details or not. Boolean value.
-        """
-        table_data = []
-        printable_fields = Ec2Instance.get_printable_fields(verbose)
-        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
-        for instance in self.instances:
-            instance_data = []
-            for name, _ in printable_fields:
-                instance_data.append(Ec2Instance.get_field_printable_value(instance, name))
-            table_data.append(instance_data)
-        table = AsciiTable(table_data)
-        print(table.table)
 
 class SearchElbInstances(SearchAWSResources):
     """Retrieve and operate on a set of ELB instances.
@@ -143,22 +161,12 @@ class SearchElbInstances(SearchAWSResources):
          return   [ElbInstance(instance, account)
                    for instance in client.describe_load_balancers()['LoadBalancerDescriptions']]
 
-    def _print_table_format(self, verbose):
-        """Print ec2info in a table.
+    @staticmethod
+    def _get_printable_fields(verbose):
+        return ElbInstance.get_printable_fields(verbose)
 
-        Print the information contained in ec2info in a tabular format.
+    @staticmethod
+    def _get_field_printable_value(instance, name):
+        return ElbInstance.get_field_printable_value(instance, name)
 
-        Args:
-          - verbose: Print extra details or not. Boolean value.
-        """
-        table_data = []
-        printable_fields = ElbInstance.get_printable_fields(verbose)
-        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
-        for instance in self.instances:
-            instance_data = []
-            for name, _ in printable_fields:
-                instance_data.append(ElbInstance.get_field_printable_value(instance, name))
-            table_data.append(instance_data)
-        table = AsciiTable(table_data)
-        print(table.table)
 
