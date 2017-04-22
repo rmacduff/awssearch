@@ -167,12 +167,8 @@ class Ec2Instance(AWSInstance):
         Args:
           - tag_data: The tag to be printed. (string)
         """
-        printable_tag_data = []
-        for tags in tag_data:
-            if tags['Key'] != 'Name':
-                printable_tag_data.append("{}={}".format(tags['Key'], tags['Value']))
-            printable_tag_data.sort()
-        return "\n".join(printable_tag_data)
+        return "\n".join(["{}={}".format(tags['Key'], tags['Value'])
+                          for tags in tag_data if tags['Key'] != 'None'])
 
     @staticmethod
     def _get_ip_printable_value(ip_data):
@@ -303,14 +299,8 @@ class ElbInstance(AWSInstance):
     @staticmethod
     def _get_instances_printable_value(instances):
         """Return the printable value ths set of EC2 instances for .
-
-        Args:
-          - tag_data: The tag to be printed. (string)
         """
-        printable_instance_data = []
-        for instance in instances:
-            printable_instance_data.append("{}".format(instance['InstanceId']))
-        return "\n".join(printable_instance_data)
+        return "\n".join([instance['InstanceId'] for instance in instances])
 
     @staticmethod
     def get_field_printable_value(instance, field_name):
