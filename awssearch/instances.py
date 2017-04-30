@@ -30,6 +30,23 @@ class AWSInstance(object):
     def match(self, attribute, value):
         pass
 
+    @classmethod
+    def get_printable_fields(cls, verbose):
+        """Return a list of the printable fields.
+
+        Args:
+          - verbose: Include all fields or not. (boolean)
+        """
+        fields = []
+        for field in cls.instance_fields:
+            field_name = field['name']
+            field_printable_name = field['printable_name']
+            field_verbose = field['verbose_display']
+            if verbose and field_verbose:
+                fields.append((field_name, field_printable_name))
+            elif not field_verbose:
+                fields.append((field_name, field_printable_name))
+        return fields
 
 class Ec2Instance(AWSInstance):
     """Represent a single EC2 Instance.
@@ -141,24 +158,6 @@ class Ec2Instance(AWSInstance):
                     return True
             except AttributeError:
                 return False
-
-    @staticmethod
-    def get_printable_fields(verbose):
-        """Return a list of the printable fields.
-
-        Args:
-          - verbose: Include all fields or not. (boolean)
-        """
-        fields = []
-        for field in Ec2Instance.instance_fields:
-            field_name = field['name']
-            field_printable_name = field['printable_name']
-            field_verbose = field['verbose_display']
-            if verbose and field_verbose:
-                fields.append((field_name, field_printable_name))
-            elif not field_verbose:
-                fields.append((field_name, field_printable_name))
-        return fields
 
     @staticmethod
     def _get_tag_printable_value(tag_data):
@@ -276,25 +275,6 @@ class ElbInstance(AWSInstance):
         field_value = self[real_attribute]
         if value.lower() in field_value.lower():
             return True
-
-    #@classmethod
-    @staticmethod
-    def get_printable_fields(verbose):
-        """Return a list of the printable fields.
-
-        Args:
-          - verbose: Include all fields or not. (boolean)
-        """
-        fields = []
-        for field in ElbInstance.instance_fields:
-            field_name = field['name']
-            field_printable_name = field['printable_name']
-            field_verbose = field['verbose_display']
-            if verbose and field_verbose:
-                fields.append((field_name, field_printable_name))
-            elif not field_verbose:
-                fields.append((field_name, field_printable_name))
-        return fields
 
     @staticmethod
     def _get_instances_printable_value(instances):
