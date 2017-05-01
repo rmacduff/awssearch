@@ -92,6 +92,9 @@ class SearchAWSResources(object):
     def _get_field_printable_value(instance, name):
         pass
 
+    def _get_instance_data(self, instance, verbose):
+        return [self._get_field_printable_value(instance, attribute) for attribute in self._get_attributes(verbose)]
+
     def _print_table_format(self, verbose):
         """Print ec2info in a table.
 
@@ -100,15 +103,10 @@ class SearchAWSResources(object):
         Args:
           - verbose: Print extra details or not. Boolean value.
         """
-        table_data = []
-        printable_fields = self._get_printable_fields(verbose)
         # Add the headers to the table
-        table_data.append([name_tuple[1] for name_tuple in  printable_fields])
-        for instance in self.instances:
-            instance_data = []
-            for name, _ in printable_fields:
-                instance_data.append(self._get_field_printable_value(instance, name))
-            table_data.append(instance_data)
+        table_data = [list(self._get_printable_attribute_names(verbose))]
+        # Gather the data for each instance
+        [table_data.append(self._get_instance_data(instance, verbose)) for instance in self.instances]
         table = AsciiTable(table_data)
         table.inner_row_border = True
         print(table.table)
@@ -140,8 +138,12 @@ class SearchEc2Instances(SearchAWSResources):
                   for instance in reservations['Instances']]
 
     @staticmethod
-    def _get_printable_fields(verbose):
-        return Ec2Instance.get_printable_fields(verbose)
+    def _get_attributes(verbose):
+        return Ec2Instance.get_attributes(verbose)
+
+    @staticmethod
+    def _get_printable_attribute_names(verbose):
+        return Ec2Instance.get_printable_attribute_names(verbose)
 
     @staticmethod
     def _get_field_printable_value(instance, name):
@@ -162,8 +164,12 @@ class SearchElbInstances(SearchAWSResources):
                    for instance in client.describe_load_balancers()['LoadBalancerDescriptions']]
 
     @staticmethod
-    def _get_printable_fields(verbose):
-        return ElbInstance.get_printable_fields(verbose)
+    def _get_attributes(verbose):
+        return ElbInstance.get_attributes(verbose)
+
+    @staticmethod
+    def _get_printable_attribute_names(verbose):
+        return ElbInstance.get_printable_attribute_names(verbose)
 
     @staticmethod
     def _get_field_printable_value(instance, name):

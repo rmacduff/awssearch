@@ -31,7 +31,7 @@ class AWSInstance(object):
         pass
 
     @classmethod
-    def get_printable_fields(cls, verbose):
+    def _get_printable_fields(cls, verbose):
         """Return a list of the printable fields.
 
         Args:
@@ -47,6 +47,14 @@ class AWSInstance(object):
             elif not field_verbose:
                 fields.append((field_name, field_printable_name))
         return fields
+
+    @classmethod
+    def get_printable_attribute_names(cls, verbose):
+        return [name_tuple[1] for name_tuple in cls._get_printable_fields(verbose)]
+
+    @classmethod
+    def get_attributes(cls, verbose):
+        return [name_tuple[0] for name_tuple in cls._get_printable_fields(verbose)]
 
 class Ec2Instance(AWSInstance):
     """Represent a single EC2 Instance.
