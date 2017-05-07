@@ -47,7 +47,7 @@ def parse_commandline_args():
                             default='running',
                             choices=('running', 'stopped', 'terminated'))
     parser_ec2.add_argument('-t', '--tags',
-                            #action='append',
+                            action='append',
                             dest='instance_tags')
 
     # elb sub-command

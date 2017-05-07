@@ -134,13 +134,23 @@ class Ec2Instance(AWSInstance):
             if tag['Key'] == 'Name':
                 return tag['Value']
 
+    def _match_tags(self, match_tags):
+        """Returns true if each of the tags in match_tags matches a tag in self
+
+        Args:
+          - match_tags: A list of strings to match against
+
+        Returns:
+          - True if each tag in match_tags matches a tag in self.
+        """
+        instance_tags = ["{}={}".format(tag['Key'].lower(), tag['Value'].lower()) for tag in self['Tags'] if tag['Key'] != 'Name']
+        matches = {mtag:itag for mtag in match_tags for itag in instance_tags if mtag.lower() in itag}
+        if len(matches) == len(match_tags):
+            return True
+
     def match(self, attribute, value):
         if attribute == 'instance_tags':
-            for tags in self['Tags']:
-                if tags['Key'] != 'Name':
-                    tag_value = "{}={}".format(tags['Key'], tags['Value'])
-                    if value.lower() in tag_value.lower():
-                        return True
+            return self._match_tags(value)
         elif attribute == 'instance_ip':
             public_ip = self['PublicIpAddress']
             private_ip = self['PrivateIpAddress']
