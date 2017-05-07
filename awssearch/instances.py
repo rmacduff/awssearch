@@ -148,34 +148,98 @@ class Ec2Instance(AWSInstance):
         if len(matches) == len(match_tags):
             return True
 
+    def _match_ip(self, match_ip):
+        """Returns true if match_ip matches either the private or public IP of self
+
+        Args:
+          - match_ip: A string representing a partial or full IP address
+
+        Returns:
+          - True if match_ip partially matches either the public or private IP of self
+        """
+        public_ip = self['PublicIpAddress']
+        private_ip = self['PrivateIpAddress']
+        if (private_ip and match_ip in private_ip) or \
+            (public_ip  and match_ip in public_ip):
+            return True
+
+    def _match_state(self, match_state):
+        """Returns true if match_state matches the running state of self
+
+        Args:
+          - match_state: A string representing the state of an EC2 instance
+
+        Returns:
+          - True if match_state matches the running state of self
+        """
+        running_state = self['State']['Name']
+        if match_state == running_state:
+            return True
+
+    def _match_name(self, match_name):
+        """Returns true if match_name matches the name of self
+
+        Args:
+          - match_name: A string representing the name of an EC2 instance
+
+        Returns:
+          - True if match_name partially (or completely)  matches the name of self
+        """
+        name = self['Name']
+        if name and match_name.lower() in name.lower():
+            return True
+
+    def _match_id(self, match_instance_id):
+        """Returns true if match_instance_id matches the instance ID of self
+
+        Args:
+          - match_instance_id: A string representing a full or partial instance ID of an EC2 instance
+
+        Returns:
+          - True if match_instance_id partially (or completely)  matches the instance ID of self
+        """
+        name = self['InstanceId']
+        if name and match_instance_id.lower() in name.lower():
+            return True
+
+    def _match_generic(self, value, attribute):
+        """Returns true if value matches the attribute of self
+
+        Args:
+          - value: A string to match against the attribute of an EC2 instance
+          - attribute: A string representing an attribute of an EC2 instance
+
+        Returns:
+          - True if value partially (or completely) matches the attribute of self
+        """
+        field_value = self[attribute]
+        try:
+            if value.lower() in field_value.lower():
+                return True
+        except AttributeError:
+            return False
+
     def match(self, attribute, value):
-        if attribute == 'instance_tags':
-            return self._match_tags(value)
-        elif attribute == 'instance_ip':
-            public_ip = self['PublicIpAddress']
-            private_ip = self['PrivateIpAddress']
-            if (private_ip and value in private_ip) or \
-                (public_ip  and value in public_ip):
-                return True
-        elif attribute == 'instance_state':
-            running_state = self['State']['Name']
-            if value == running_state:
-                return True
-        elif attribute == 'instance_name':
-            name = self['Name']
-            if name and value.lower() in name.lower():
-                return True
-        elif attribute == 'instance_id':
-            name = self['InstanceId']
-            if name and value.lower() in name.lower():
-                return True
-        else:
-            field_value = self[attribute]
-            try:
-                if value.lower() in field_value.lower():
-                    return True
-            except AttributeError:
-                return False
+        """Returns true if value matches the attribute of self
+
+        Args:
+          - value: A string to match against the attribute of an EC2 instance
+          - attribute: A string representing an attribute of an EC2 instance
+
+        Returns:
+          - True if value partially (or completely) matches the attribute of self
+        """
+        match_methods = {
+                'instance_tags': self._match_tags,
+                'instance_ip': self._match_ip,
+                'instance_state': self._match_state,
+                'instance_name': self._match_name,
+                'instance_id': self._match_id,
+                }
+        try:
+            return match_methods[attribute](value)
+        except KeyError:
+            return self._match_generic(value, attribute)
 
     @staticmethod
     def _get_tag_printable_value(tag_data):
