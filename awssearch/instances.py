@@ -124,6 +124,11 @@ class Ec2Instance(AWSInstance):
             },
     ]
 
+    # Static helper methods
+    @staticmethod
+    def _sg_format(sg_name, sg_id):
+        return "{} - {}".format(sg_name, sg_id)
+
     def __getitem__(self, item):
         if item == 'aws_account':
             return self.aws_account
@@ -151,6 +156,20 @@ class Ec2Instance(AWSInstance):
         instance_tags = ["{}={}".format(tag['Key'].lower(), tag['Value'].lower()) for tag in self['Tags'] if tag['Key'] != 'Name']
         matches = {mtag:itag for mtag in match_tags for itag in instance_tags if mtag.lower() in itag}
         if len(matches) == len(match_tags):
+            return True
+
+    def _match_securitygroups(self, match_sgs):
+        """Returns true if each of the strings in match_sgs matches a security group in self
+
+        Args:
+          - match_sgs: A list of strings representing partial security group names or IDs to match against
+
+        Returns:
+          - True if each string in match_sgs matches a security group in self.
+        """
+        sg_tags = [self._sg_format(sg['GroupName'].lower(), sg['GroupId'].lower()) for sg in self['SecurityGroups']]
+        matches = {msg:isg for msg in match_sgs for isg in sg_tags if msg.lower() in isg}
+        if len(matches) == len(match_sgs):
             return True
 
     def _match_ip(self, match_ip):
@@ -240,6 +259,7 @@ class Ec2Instance(AWSInstance):
                 'instance_state': self._match_state,
                 'instance_name': self._match_name,
                 'instance_id': self._match_id,
+                'instance_sg': self._match_securitygroups,
                 }
         try:
             return match_methods[attribute](value)
@@ -281,8 +301,7 @@ class Ec2Instance(AWSInstance):
         Args:
           - sg_data: The security groups to be printed. (string)
         """
-        return "\n".join(["{} - {}".format(sg['GroupName'], sg['GroupId'])
-                          for sg in sg_data])
+        return "\n".join(Ec2Instance._sg_format(sg['GroupName'], sg['GroupId']) for sg in sg_data)
 
     @staticmethod
     def get_field_printable_value(instance, field_name):

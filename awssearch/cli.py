@@ -46,6 +46,9 @@ def parse_commandline_args():
                             dest='instance_state',
                             default='running',
                             choices=('running', 'stopped', 'terminated'))
+    parser_ec2.add_argument('--sg',
+                            action='append',
+                            dest='instance_sg')
     parser_ec2.add_argument('-t', '--tags',
                             action='append',
                             dest='instance_tags')
@@ -98,6 +101,8 @@ def main():
             search_filter.update({'instance_tags': args.instance_tags})
         if args.instance_ip:
             search_filter.update({'instance_ip': args.instance_ip})
+        if args.instance_sg:
+            search_filter.update({'instance_sg': args.instance_sg})
         # State defaults to 'running' so always apply this filter
         search_filter.update({'instance_state': args.instance_state})
 
