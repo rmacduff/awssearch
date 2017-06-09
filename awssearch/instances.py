@@ -108,6 +108,11 @@ class Ec2Instance(AWSInstance):
                 'verbose_display': False,
             },
             {
+                'name': 'SecurityGroups',
+                'printable_name': "Security Groups",
+                'verbose_display': True,
+            },
+            {
                 'name': 'LaunchTime',
                 'printable_name': "Launch Time",
                 'verbose_display': True,
@@ -270,6 +275,16 @@ class Ec2Instance(AWSInstance):
         return state_data['Name']
 
     @staticmethod
+    def _get_securitygroups_printable_value(sg_data):
+        """Return the printable value for security groups.
+
+        Args:
+          - sg_data: The security groups to be printed. (string)
+        """
+        return "\n".join(["{} - {}".format(sg['GroupName'], sg['GroupId'])
+                          for sg in sg_data])
+
+    @staticmethod
     def get_field_printable_value(instance, field_name):
         """Return a printable value for a given field.
 
@@ -282,6 +297,7 @@ class Ec2Instance(AWSInstance):
             'PrivateIpAddress': Ec2Instance._get_ip_printable_value,
             'PublicIpAddress': Ec2Instance._get_ip_printable_value,
             'State': Ec2Instance._get_state_printable_value,
+            'SecurityGroups': Ec2Instance._get_securitygroups_printable_value,
             }
         field_data = instance[field_name]
         try:
@@ -325,6 +341,11 @@ class ElbInstance(AWSInstance):
                 'verbose_display': False,
             },
             {
+                'name': 'SecurityGroups',
+                'printable_name': "Security Groups",
+                'verbose_display': True,
+            },
+            {
                 'name': 'CreatedTime',
                 'printable_name': "Created Time",
                 'verbose_display': True,
@@ -365,6 +386,15 @@ class ElbInstance(AWSInstance):
         return "\n".join([instance['InstanceId'] for instance in instances])
 
     @staticmethod
+    def _get_securitygroups_printable_value(sg_data):
+        """Return the printable value for security groups.
+
+        Args:
+          - sg_data: The security groups to be printed. (string)
+        """
+        return "\n".join([sg for sg in sg_data])
+
+    @staticmethod
     def get_field_printable_value(instance, field_name):
         """Return a printable value for a given field.
 
@@ -372,9 +402,9 @@ class ElbInstance(AWSInstance):
           - instance: The AWS resource instance that is being printed. (AwsInstance)
           - field_name: The field that is to be printed. (string)
         """
-        field_format_functions = {}
         field_format_functions = {
             'Instances': ElbInstance._get_instances_printable_value,
+            'SecurityGroups': ElbInstance._get_securitygroups_printable_value,
             }
         field_data = instance[field_name]
         try:
