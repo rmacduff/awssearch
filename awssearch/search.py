@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 import abc
+import json
 
 from terminaltables import AsciiTable
 import boto3
@@ -89,11 +90,28 @@ class SearchAWSResources(object):
         pass
 
     @abc.abstractmethod
-    def _get_field_printable_value(instance, name):
+    def _get_field_printable_value(instance, name, print_format):
         pass
 
-    def _get_instance_data(self, instance, verbose):
-        return [self._get_field_printable_value(instance, attribute) for attribute in self._get_attributes(verbose)]
+    def _get_instance_data(self, instance, verbose, print_format):
+        return [self._get_field_printable_value(instance, attribute, print_format) for attribute in self._get_attributes(verbose)]
+
+    def _print_json_format(self, verbose):
+        """Print instanecs in json format.
+
+        Args:
+          - verbose: Print extra details or not. Boolean value.
+        """
+        attribute_names = list(self._get_printable_attribute_names(verbose))
+        #[table_data.append(self._get_instance_data(instance, verbose, print_format='json')) for instance in self.instances]
+        output = []
+        for instance in self.instances:
+            #output.append(json.dumps(dict(zip(attribute_names, self._get_instance_data(instance, verbose, print_format='json')))))
+            output.append(dict(zip(attribute_names, self._get_instance_data(instance, verbose, print_format='json'))))
+        json_output = { 'instances': output }
+        print(json.dumps(json_output, indent=4))
+
+
 
     def _print_table_format(self, verbose):
         """Print ec2info in a table.
@@ -106,12 +124,12 @@ class SearchAWSResources(object):
         # Add the headers to the table
         table_data = [list(self._get_printable_attribute_names(verbose))]
         # Gather the data for each instance
-        [table_data.append(self._get_instance_data(instance, verbose)) for instance in self.instances]
+        [table_data.append(self._get_instance_data(instance, verbose, print_format='table')) for instance in self.instances]
         table = AsciiTable(table_data)
         table.inner_row_border = True
         print(table.table)
 
-    def print_instances(self, print_format='table', verbose=False):
+    def print_instances(self, print_format='json', verbose=False):
         """Print ec2data in format specified by format
 
         Args:
@@ -119,7 +137,11 @@ class SearchAWSResources(object):
         `long` format. Defaults to 'table'.
         - verbose: Print extra details or not. Defaults to 'False'.
         """
-        print_functions = {'table': self._print_table_format, 'long': self._print_long_format}
+        print_functions = {
+                'table': self._print_table_format, 
+                'json': self._print_json_format, 
+                'long': self._print_long_format
+                }
         print_functions[print_format](verbose)
 
 
@@ -146,8 +168,8 @@ class SearchEc2Instances(SearchAWSResources):
         return Ec2Instance.get_printable_attribute_names(verbose)
 
     @staticmethod
-    def _get_field_printable_value(instance, name):
-        return Ec2Instance.get_field_printable_value(instance, name)
+    def _get_field_printable_value(instance, name, print_format):
+        return Ec2Instance.get_field_printable_value(instance, name, print_format)
 
 
 class SearchElbInstances(SearchAWSResources):

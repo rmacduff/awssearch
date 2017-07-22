@@ -2,6 +2,7 @@
 """
 
 from __future__ import print_function
+from datetime import date, datetime
 import abc
 
 class AWSInstance(object):
@@ -267,26 +268,35 @@ class Ec2Instance(AWSInstance):
             return self._match_generic(value, attribute)
 
     @staticmethod
-    def _get_tag_printable_value(tag_data):
+    def _get_tag_printable_value(tag_data, print_format):
         """Return the printable value for a tag.
 
         Args:
           - tag_data: The tag to be printed. (string)
         """
-        return "\n".join(["{}={}".format(tags['Key'], tags['Value'])
-                          for tags in tag_data if tags['Key'] != 'None'])
+        print_formats = {
+                'table': "\n".join(["{}={}".format(tags['Key'], tags['Value'])
+                                   for tags in tag_data if tags['Key'] != 'None']),
+                'json': ",".join(["{}={}".format(tags['Key'], tags['Value'])
+                                   for tags in tag_data if tags['Key'] != 'None']),
+                }
+        return print_formats[print_format]
 
     @staticmethod
-    def _get_ip_printable_value(ip_data):
+    def _get_ip_printable_value(ip_data, print_format):
         """Return the printable value for an IP.
 
         Args:
           - ip_data: The IP to be printed. (string)
         """
-        return "ssh://{}".format(ip_data) if ip_data else "n/a"
+        print_formats = {
+                'table': "ssh://{}".format(ip_data) if ip_data else "n/a",
+                'json': "{}".format(ip_data) if ip_data else "n/a",
+                }
+        return print_formats[print_format]
 
     @staticmethod
-    def _get_state_printable_value(state_data):
+    def _get_state_printable_value(state_data, print_format):
         """Return the printable value for state.
 
         Args:
@@ -295,16 +305,43 @@ class Ec2Instance(AWSInstance):
         return state_data['Name']
 
     @staticmethod
-    def _get_securitygroups_printable_value(sg_data):
+    def _get_securitygroups_printable_value(sg_data, print_format):
         """Return the printable value for security groups.
 
         Args:
           - sg_data: The security groups to be printed. (string)
         """
-        return "\n".join(Ec2Instance._sg_format(sg['GroupName'], sg['GroupId']) for sg in sg_data)
+        print_formats = {
+                'table': "\n".join(Ec2Instance._sg_format(sg['GroupName'], sg['GroupId']) for sg in sg_data),
+                'json': ",".join(Ec2Instance._sg_format(sg['GroupName'], sg['GroupId']) for sg in sg_data),
+                }
+        return print_formats[print_format]
 
     @staticmethod
-    def get_field_printable_value(instance, field_name):
+    def _get_launchtime_printable_value(lt_data, print_format):
+        """Return the printable value for launch time.
+
+        Args:
+          - lt_data: The launch time to be printed. (string)
+        """
+        print_formats = {
+                'table': lt_data,
+                'json': Ec2Instance.json_serial(lt_data),
+                }
+        return print_formats[print_format]
+
+
+    @staticmethod
+    def json_serial(obj):
+        """JSON serializer for objects not serializable by default json code"""
+
+        if isinstance(obj, (datetime, date)):
+            serial = obj.isoformat()
+            return serial
+        raise TypeError ("Type %s not serializable" % type(obj))
+
+    @staticmethod
+    def get_field_printable_value(instance, field_name, print_format):
         """Return a printable value for a given field.
 
         Args:
@@ -317,10 +354,11 @@ class Ec2Instance(AWSInstance):
             'PublicIpAddress': Ec2Instance._get_ip_printable_value,
             'State': Ec2Instance._get_state_printable_value,
             'SecurityGroups': Ec2Instance._get_securitygroups_printable_value,
+            'LaunchTime': Ec2Instance._get_launchtime_printable_value,
             }
         field_data = instance[field_name]
         try:
-            printable_data = field_format_functions[field_name](field_data)
+            printable_data = field_format_functions[field_name](field_data, print_format)
         except KeyError:
             printable_data = field_data
 
