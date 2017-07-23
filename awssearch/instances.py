@@ -57,6 +57,17 @@ class AWSInstance(object):
     def get_attributes(cls, verbose):
         return [name_tuple[0] for name_tuple in cls._get_printable_fields(verbose)]
 
+    @staticmethod
+    def json_serial(obj):
+        """JSON serializer for objects not serializable by default json code
+
+        Source: https://stackoverflow.com/questions/11875770/how-to-overcome-datetime-datetime-not-json-serializable
+        """
+
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        raise TypeError ("Type %s not serializable" % type(obj))
+
 class Ec2Instance(AWSInstance):
     """Represent a single EC2 Instance.
 
@@ -330,15 +341,6 @@ class Ec2Instance(AWSInstance):
                 }
         return print_formats[print_format]
 
-
-    @staticmethod
-    def json_serial(obj):
-        """JSON serializer for objects not serializable by default json code"""
-
-        if isinstance(obj, (datetime, date)):
-            serial = obj.isoformat()
-            return serial
-        raise TypeError ("Type %s not serializable" % type(obj))
 
     @staticmethod
     def get_field_printable_value(instance, field_name, print_format):
