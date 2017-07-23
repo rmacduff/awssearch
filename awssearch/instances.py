@@ -337,7 +337,7 @@ class Ec2Instance(AWSInstance):
         """
         print_formats = {
                 'table': lt_data,
-                'json': Ec2Instance.json_serial(lt_data),
+                'json': AWSInstance.json_serial(lt_data),
                 }
         return print_formats[print_format]
 
@@ -439,22 +439,43 @@ class ElbInstance(AWSInstance):
             return True
 
     @staticmethod
-    def _get_instances_printable_value(instances):
-        """Return the printable value ths set of EC2 instances for .
+    def _get_instances_printable_value(instances, print_format):
+        """Return the printable value thss set of ELBs.
         """
-        return "\n".join([instance['InstanceId'] for instance in instances])
+        print_formats = {
+                'table': "\n".join([instance['InstanceId'] for instance in instances]),
+                'json': ",".join([instance['InstanceId'] for instance in instances]),
+                }
+        return print_formats[print_format]
 
     @staticmethod
-    def _get_securitygroups_printable_value(sg_data):
+    def _get_securitygroups_printable_value(sg_data, print_format):
         """Return the printable value for security groups.
 
         Args:
           - sg_data: The security groups to be printed. (string)
         """
-        return "\n".join([sg for sg in sg_data])
+        print_formats = {
+                'table': "\n".join([sg for sg in sg_data]),
+                'json': ",".join([sg for sg in sg_data]),
+                }
+        return print_formats[print_format]
 
     @staticmethod
-    def get_field_printable_value(instance, field_name):
+    def _get_createdtime_printable_value(ct_data, print_format):
+        """Return the printable value for create time.
+
+        Args:
+          - ct_data: The launch time to be printed. (string)
+        """
+        print_formats = {
+                'table': ct_data,
+                'json': AWSInstance.json_serial(ct_data),
+                }
+        return print_formats[print_format]
+
+    @staticmethod
+    def get_field_printable_value(instance, field_name, print_format):
         """Return a printable value for a given field.
 
         Args:
@@ -464,10 +485,11 @@ class ElbInstance(AWSInstance):
         field_format_functions = {
             'Instances': ElbInstance._get_instances_printable_value,
             'SecurityGroups': ElbInstance._get_securitygroups_printable_value,
+            'CreatedTime': ElbInstance._get_createdtime_printable_value,
             }
         field_data = instance[field_name]
         try:
-            printable_data = field_format_functions[field_name](field_data)
+            printable_data = field_format_functions[field_name](field_data, print_format)
         except KeyError:
             printable_data = field_data
 

@@ -103,10 +103,8 @@ class SearchAWSResources(object):
           - verbose: Print extra details or not. Boolean value.
         """
         attribute_names = list(self._get_printable_attribute_names(verbose))
-        #[table_data.append(self._get_instance_data(instance, verbose, print_format='json')) for instance in self.instances]
         output = []
         for instance in self.instances:
-            #output.append(json.dumps(dict(zip(attribute_names, self._get_instance_data(instance, verbose, print_format='json')))))
             output.append(dict(zip(attribute_names, self._get_instance_data(instance, verbose, print_format='json'))))
         json_output = { 'instances': output }
         print(json.dumps(json_output, indent=4))
@@ -193,7 +191,7 @@ class SearchElbInstances(SearchAWSResources):
         return ElbInstance.get_printable_attribute_names(verbose)
 
     @staticmethod
-    def _get_field_printable_value(instance, name):
-        return ElbInstance.get_field_printable_value(instance, name)
+    def _get_field_printable_value(instance, name, print_format):
+        return ElbInstance.get_field_printable_value(instance, name, print_format)
 
 
