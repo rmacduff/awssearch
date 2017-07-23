@@ -129,18 +129,17 @@ class SearchAWSResources(object):
         table.inner_row_border = True
         print(table.table)
 
-    def print_instances(self, print_format='json', verbose=False):
-        """Print ec2data in format specified by format
+    def print_instances(self, print_format='table', verbose=False):
+        """Print instances in format specified by format
 
         Args:
         - print_format: How each entry should be printed. Either `table` or
-        `long` format. Defaults to 'table'.
+        `json` format. Defaults to 'table'.
         - verbose: Print extra details or not. Defaults to 'False'.
         """
         print_functions = {
                 'table': self._print_table_format, 
                 'json': self._print_json_format, 
-                'long': self._print_long_format
                 }
         print_functions[print_format](verbose)
 
