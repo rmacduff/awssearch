@@ -24,6 +24,9 @@ def parse_commandline_args():
     parser.add_argument('-a', '--account',
                         dest='aws_account',
                         default='all')
+    parser.add_argument('-f', '--format',
+                        dest='print_format',
+                        default='table')
     parser.add_argument('-r', '--region',
                         dest='aws_regions',
                         default='all')
@@ -125,6 +128,7 @@ def main():
         sys.exit(1)
     instances.filter(search_filter)
     instances.print_instances(
+        print_format=args.print_format,
         verbose=args.verbose,
         )
 
